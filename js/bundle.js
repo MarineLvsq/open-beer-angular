@@ -51,7 +51,8 @@ module.exports=function(){
 };
 },{}],3:[function(require,module,exports){
 angular.module("mainApp",["ngRoute","ngResource","ngAnimate",require("./breweries/breweriesModule"),require("./config/configModule")]).
-controller("MainController", ["$scope","$location",require("./mainController")]).
+controller("MainController", ["$scope","$location","save",require("./mainController")]).
+controller("SaveController", ["$scope","$location","save",require("./save/saveController")]).
 service("rest", ["$http","$resource","$location","config",require("./services/rest")]).
 service("save", ["rest","config","$route",require("./services/save")]).
 config(["$routeProvider","$locationProvider","$httpProvider",require("./config")]).
@@ -90,7 +91,7 @@ run(['$rootScope','$location', '$routeParams', function($rootScope, $location, $
 	return factory;
 });
 
-},{"./addons/notDeletedFilter":1,"./addons/sortBy":2,"./breweries/breweriesModule":5,"./config":7,"./config/configModule":9,"./mainController":10,"./services/rest":11,"./services/save":12}],4:[function(require,module,exports){
+},{"./addons/notDeletedFilter":1,"./addons/sortBy":2,"./breweries/breweriesModule":5,"./config":7,"./config/configModule":9,"./mainController":10,"./save/saveController":11,"./services/rest":12,"./services/save":13}],4:[function(require,module,exports){
 module.exports=function($scope,rest,$timeout,$location,config,$route,save) {
 	$scope.data={load:false};
 
@@ -196,8 +197,8 @@ module.exports=function($scope,rest,$timeout,$location,config,$route,save) {
 			if(config.breweries.update==="immediate" || force){
 				rest.post($scope.data,"breweries",brewery.name,callback);
 			}else{
-				save.addOperation($scope.update,brewery);
 				brewery.flag="New";
+				save.addOperation($scope.update,brewery);
 				$location.path("breweries");
 			}
 	}
@@ -215,9 +216,9 @@ module.exports=function($scope,rest,$timeout,$location,config,$route,save) {
 			brewery.deleted=true;
 			rest.remove(brewery,"breweries",callback);
 		}else{
+			brewery.flag="Deleted";
 			save.addOperation($scope.removeOne,brewery);
 			brewery.deleted=$scope.hideDeleted;
-			brewery.flag="Deleted";
 		}
 	}
 };
@@ -254,8 +255,9 @@ module.exports=function($scope,config,$location,rest,save){
 		if(config.breweries.update==="immediate" || force)
 			rest.put(config.activeBrewery.id,$scope.data,"breweries",config.activeBrewery.name,callback);
 		else{
-			save.addOperation($scope.update,brewery);
 			config.activeBrewery.reference.flag="Updated";
+			brewery.flag="Updated";
+			save.addOperation($scope.update,brewery);
 			$location.path("breweries");
 		}
 	}
@@ -281,6 +283,9 @@ module.exports=function($routeProvider,$locationProvider,$httpProvider) {
 	}).when('/breweries/update', {
 		templateUrl: 'templates/breweries/breweryForm.html',
 		controller: 'BreweryUpdateController'
+	}).when('/saves', {
+		templateUrl: 'templates/saveMain.html',
+		controller: 'SaveController'
 	}).when('/config', {
 		templateUrl: 'templates/config.html',
 		controller: 'ConfigController'
@@ -300,10 +305,64 @@ var configApp=angular.module("ConfigApp", []).
 controller("ConfigController", ["$scope","config",require("./configController")]);
 module.exports=configApp.name;
 },{"./configController":8}],10:[function(require,module,exports){
-module.exports=function($scope,$location) {
-
+module.exports=function($scope,$location,save) {
+	$scope.hasOperations=function(){
+		return save.operations.length>0;
+	};
+	
+	$scope.opCount=function(){
+		return save.operations.length;
+	};
 };
 },{}],11:[function(require,module,exports){
+module.exports=function($scope,$location,save){
+	$scope.data=save;
+	$scope.allSelected=false;
+	$scope.sortBy={field:"name",asc:false};
+	
+	$scope.selectAll=function(){
+		angular.forEach($scope.data.operations, function(value, key) {
+			value.selected=$scope.allSelected;
+		});
+	};
+	
+	$scope.saveAll=function(){
+		save.executeAll();
+	};
+	
+	$scope.setActive=function(operation){
+		operation.active=!operation.active;
+		if(operation.active){
+			if(angular.isDefined($scope.activeOperation)){
+				$scope.activeOperation.active=false;
+			}
+			$scope.activeOperation=operation;
+		}else{
+			$scope.activeOperation=undefined;
+		}
+		config.activeOperation=$scope.activeOperation;
+	};
+	
+	$scope.countSelected=function(){
+		var result=0;
+		angular.forEach($scope.data.operations, function(value, key) {
+			if(value.selected)
+				result++;
+		});
+		return result;
+	};
+	
+	$scope.remove=function(){
+		angular.forEach($scope.data.operations, function(value, key) {
+			if(value.selected){
+				var index=save.operations.indexOf(value);
+				save.operations.splice(index,1);
+			}
+		});
+		return true;
+	};
+};
+},{}],12:[function(require,module,exports){
 module.exports=function($http,$resource,$location,restConfig) {
 	var self=this;
 	if(angular.isUndefined(this.messages))
@@ -405,7 +464,7 @@ module.exports=function($http,$resource,$location,restConfig) {
 		self.messages.length=0;
 	};
 };
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 module.exports=function(rest,config,$route){
 	var self=this;
 	this.dataScope={};

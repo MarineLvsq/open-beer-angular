@@ -1,0 +1,38 @@
+<div class="btn-toolbar" role="toolbar" aria-label="toolbar">
+	<div class="btn-group" role="group" aria-label="Refresh">
+		<a title="Save" href="#" class="btn btn-default" data-ng-click="saveAll()">
+			<span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
+		</a>
+	</div>
+	<div class="btn-group" role="group" aria-label="filter">
+		<input class="form-control" type="text" placeholder="Filtrer..." data-ng-model="q">
+	</div>
+	<div class="btn-group" role="group" aria-label="Supprimer">
+		<a class="btn btn-default" data-ng-show="countSelected()>0" data-ng-click="remove()"><data-ng-pluralize count="countSelected()" when="{1: 'Supprimer la brasserie','other':'Supprimer les brasseries ({})'}"></span></a>
+	</div>
+	<div class="btn-group" role="group" aria-label="count">
+		<div class="btn"><data-ng-pluralize count="results.length" when="{0: 'no operation',1: 'One operation','other':'{} operations'}"></data-ng-pluralize></div>
+	</div>
+</div>
+<table class="table table-striped table-condensed">
+	<thead>
+		<tr>
+			<th><input type="checkbox" title="Sélectionner" data-ng-click="selectAll()" data-ng-model="allSelected"></th>
+			<th data-sort-by data-field="object.flag" data-ref="sortBy">Operation </th>
+			<th data-sort-by data-field="object.id" data-ref="sortBy"># </th>
+			<th data-sort-by data-field="object.name" data-ref="sortBy">Objet </th>
+			<th data-sort-by data-field="object.created_at" data-ref="sortBy">Created at </th>
+			<th>Updated at</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr data-ng-repeat="operation in data.operations | orderBy:sortBy.field : sortBy.asc | filter:q as results" data-ng-click="setActive(operation)" data-ng-class="{'active': operation.active}">
+			<td><input type="checkbox" title="Sélectionner" data-ng-model="operation.selected"></td>
+			<td><span class="label" data-ng-class="{'label-success':operation.object.flag=='New','label-warning':operation.object.flag=='Updated','label-danger':operation.object.flag=='Deleted'}">{{operation.object.flag}}</span></td>
+			<td>{{operation.object.id}}</td>
+			<td>{{operation.object.name}}</td>
+			<td>{{operation.object.created_at | date:'dd/MM/yy HH:mm:ss'}}</td>
+			<td>{{operation.object.updated_at | date:'dd/MM/yy HH:mm:ss'}}</td>
+		</tr>
+	</tbody>
+</table>

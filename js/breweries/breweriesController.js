@@ -103,8 +103,8 @@ module.exports=function($scope,rest,$timeout,$location,config,$route,save) {
 			if(config.breweries.update==="immediate" || force){
 				rest.post($scope.data,"breweries",brewery.name,callback);
 			}else{
-				save.addOperation($scope.update,brewery);
 				brewery.flag="New";
+				save.addOperation($scope.update,brewery);
 				$location.path("breweries");
 			}
 	}
@@ -122,9 +122,9 @@ module.exports=function($scope,rest,$timeout,$location,config,$route,save) {
 			brewery.deleted=true;
 			rest.remove(brewery,"breweries",callback);
 		}else{
+			brewery.flag="Deleted";
 			save.addOperation($scope.removeOne,brewery);
 			brewery.deleted=$scope.hideDeleted;
-			brewery.flag="Deleted";
 		}
 	}
 };
