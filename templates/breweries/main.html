@@ -1,0 +1,57 @@
+<div class="btn-toolbar" role="toolbar" aria-label="toolbar">
+	<div class="btn-group" role="group" aria-label="Refresh" data-ng-show="refreshOnAsk()">
+		<a title="Rafraîchir" href="#" class="btn btn-default" data-ng-click="refresh()">
+			<span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
+		</a>
+	</div>
+	<div class="btn-group" role="group" aria-label="filter">
+		<input class="form-control" type="text" placeholder="Filtrer..." data-ng-model="q">
+	</div>
+	<div class="btn-group" role="group" aria-label="opération">
+		<a href="breweries/new" class="btn btn-default">Ajouter...</a>
+	</div>
+	<div class="btn-group" role="group" aria-label="opération" data-ng-show="defferedUpdate()">
+		<a class="btn btn-default" data-ng-class="{'active': mustHideDeleted}" data-ng-click="hideDeleted()">Masquer les suppressions</a>
+	</div>
+	<div class="btn-group" role="group" aria-label="Modifier">
+		<a class="btn btn-default" data-ng-show="showUpdate()" data-ng-click="edit()">Modifier</a>
+	</div>
+	<div class="btn-group" role="group" aria-label="Supprimer">
+		<a class="btn btn-default" data-ng-show="countSelected()>0" data-ng-click="remove()"><data-ng-pluralize count="countSelected()" when="{1: 'Supprimer la brasserie','other':'Supprimer les brasseries ({})'}"></span></a>
+	</div>
+	<div class="btn-group" role="group" aria-label="count">
+		<div class="btn"><data-ng-pluralize count="results.length" when="{0: 'no brewery',1: 'One brewery','other':'{} breweries'}"></data-ng-pluralize></div>
+	</div>
+	<div class="btn-group" role="group" aria-label="false" data-ng-show="data.load">
+		<img class="btn" src="img/loader.gif">
+	</div>
+	
+</div>
+<div class="panel panel-default" data-ng-show="resultMessages.length>0">
+	<div class="container">
+		<h4><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>&nbsp;Informations</h4>
+		<p data-ng-repeat="message in messages| NotDeletedFilter as resultMessages" class="text-{{message.type}}" data-ng-show="readMessage(message)">{{message.content}}</p>
+	</div>
+</div>
+<table class="table table-striped table-condensed">
+	<thead>
+		<tr>
+			<th><input type="checkbox" title="Sélectionner" data-ng-click="selectAll()" data-ng-model="allSelected"></th>
+			<th data-sort-by data-field="id" data-ref="sortBy"># </th>
+			<th data-sort-by data-field="name" data-ref="sortBy">Name </th>
+			<th data-sort-by data-field="url" data-ref="sortBy">url </th>
+			<th data-sort-by data-field="created_at" data-ref="sortBy">Created at </th>
+			<th>Updated at</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr data-ng-repeat="brewery in data.breweries | NotDeletedFilter | orderBy:sortBy.field : sortBy.asc | filter:q as results" data-ng-click="setActive(brewery)" data-ng-class="{'active': brewery.active}">
+			<td><input type="checkbox" title="Sélectionner" data-ng-model="brewery.selected"></td>
+			<td>{{brewery.id}}</td><td>{{brewery.name}}
+				<span class="label" data-ng-class="{'label-success':brewery.flag=='New','label-warning':brewery.flag=='Updated','label-danger':brewery.flag=='Deleted'}" data-ng-show="brewery.flag">{{brewery.flag}}</span></td>
+			<td>{{brewery.url}}</td>
+			<td>{{brewery.created_at | date:'dd/MM/yy HH:mm:ss'}}</td>
+			<td>{{brewery.updated_at | date:'dd/MM/yy HH:mm:ss'}}</td>
+		</tr>
+	</tbody>
+</table>

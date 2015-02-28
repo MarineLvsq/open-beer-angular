@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+<input type="button" id="bt" value="get">
+</body>
+</html>
+<script>
+$(document).ready(function(){
+	$("#bt").on("click",function(){get();});	
+});
+var data={
+		  "brewery": {
+			    "name": "Fischer"
+			  }
+			};
+var get=function(){
+	$.ajax({
+	    url: "https://community-open-beer-database.p.mashape.com/breweries.json?token=fb84484ec43843902c957293e247c01afb5b439c6825cbaa498a111422dc7b92",
+	    type: "POST",
+	    data: data,
+	    headers:{
+	    	"X-Mashape-Key":"lqafJTJ2lrmshnnjLI7ZXXvF7eEAp1qg93rjsnzYisiGEKvXKz",
+	    	"Content-Type" : "application/x-www-form-urlencoded",
+	    	"Accept": "application/json"
+	    },
+	    complete: function(data){}
+	});
+}
+</script>
