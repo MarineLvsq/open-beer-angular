@@ -39,6 +39,7 @@ module.exports=function($scope,$location,save){
 		angular.forEach($scope.data.operations, function(value, key) {
 			if(value.selected){
 				var index=save.operations.indexOf(value);
+				value.object.flag=undefined;
 				save.operations.splice(index,1);
 			}
 		});

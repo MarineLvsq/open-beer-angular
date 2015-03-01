@@ -1,6 +1,6 @@
 <div class="btn-toolbar" role="toolbar" aria-label="toolbar">
 	<div class="btn-group" role="group" aria-label="Refresh" data-ng-show="refreshOnAsk()">
-		<a title="Rafraîchir" href="#" class="btn btn-default" data-ng-click="refresh()">
+		<a title="Rafraîchir" href="#" class="btn btn-success" data-ng-click="refresh()">
 			<span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
 		</a>
 	</div>
@@ -8,7 +8,7 @@
 		<input class="form-control" type="text" placeholder="Filtrer..." data-ng-model="q">
 	</div>
 	<div class="btn-group" role="group" aria-label="opération">
-		<a href="breweries/new" class="btn btn-default">Ajouter...</a>
+		<a href="breweries/new" class="btn btn-warning">Ajouter...</a>
 	</div>
 	<div class="btn-group" role="group" aria-label="opération" data-ng-show="defferedUpdate()">
 		<a class="btn btn-default" data-ng-class="{'active': mustHideDeleted}" data-ng-click="hideDeleted()">Masquer les suppressions</a>
@@ -45,7 +45,7 @@
 		</tr>
 	</thead>
 	<tbody>
-		<tr data-ng-repeat="brewery in data.breweries | NotDeletedFilter | orderBy:sortBy.field : sortBy.asc | filter:q as results" data-ng-click="setActive(brewery)" data-ng-class="{'active': brewery.active}">
+		<tr data-ng-repeat="brewery in data.breweries | NotDeletedFilter | orderBy:sortBy.field : sortBy.asc | filter:q as results track by $index" data-ng-dblclick="edit(brewery)" data-ng-click="setActive(brewery)" data-ng-class="{'active': isActive(brewery)}">
 			<td><input type="checkbox" title="Sélectionner" data-ng-model="brewery.selected"></td>
 			<td>{{brewery.id}}</td><td>{{brewery.name}}
 				<span class="label" data-ng-class="{'label-success':brewery.flag=='New','label-warning':brewery.flag=='Updated','label-danger':brewery.flag=='Deleted'}" data-ng-show="brewery.flag">{{brewery.flag}}</span></td>

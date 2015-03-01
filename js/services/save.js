@@ -7,8 +7,9 @@ module.exports=function(rest,config,$route){
 		self.dataScope=data;
 	};
 	
-	this.addOperation=function(operation,object){
-		self.operations.push({'op':operation,'object':object});
+	this.addOperation=function(type,operation,object){
+		object.flag=type;
+		self.operations.push({'type': type,'op': operation,'object': object});
 	};
 	
 	this.execute=function(index){

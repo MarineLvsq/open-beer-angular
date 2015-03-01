@@ -22,8 +22,6 @@ module.exports=function($scope,rest,$timeout,$location,config,$route,save) {
 	
 	$scope.refresh=function(){
 		save.executeAll();
-		//config.breweries.loaded=false;
-		//$route.reload();
 	}
 	
 	$scope.showUpdate=function(){
@@ -39,17 +37,15 @@ module.exports=function($scope,rest,$timeout,$location,config,$route,save) {
 	};
 	
 	$scope.setActive=function(brewery){
-		brewery.active=!brewery.active;
-		if(brewery.active){
-			if(angular.isDefined($scope.activeBrewery)){
-				$scope.activeBrewery.active=false;
-			}
+		if(brewery!==$scope.activeBrewery)
 			$scope.activeBrewery=brewery;
-		}else{
+		else
 			$scope.activeBrewery=undefined;
-		}
-		config.activeBrewery=$scope.activeBrewery;
 	};
+	
+	$scope.isActive=function(brewery){
+		return brewery==$scope.activeBrewery;
+	}
 	
 	$scope.hasMessage=function(){
 		return rest.messages.length>0;
@@ -65,7 +61,7 @@ module.exports=function($scope,rest,$timeout,$location,config,$route,save) {
 	$scope.countSelected=function(){
 		var result=0;
 		angular.forEach($scope.data.breweries, function(value, key) {
-			if(value.selected)
+			if(value.selected && !value.deleted)
 				result++;
 		});
 		return result;
@@ -83,7 +79,9 @@ module.exports=function($scope,rest,$timeout,$location,config,$route,save) {
 		});
 	};
 	
-	$scope.edit=function(){
+	$scope.edit=function(brewery){
+		if(angular.isDefined(brewery))
+			$scope.activeBrewery=brewery;
 		config.activeBrewery=angular.copy($scope.activeBrewery);
 		config.activeBrewery.reference=$scope.activeBrewery;
 		$location.path("breweries/update");
@@ -103,8 +101,7 @@ module.exports=function($scope,rest,$timeout,$location,config,$route,save) {
 			if(config.breweries.update==="immediate" || force){
 				rest.post($scope.data,"breweries",brewery.name,callback);
 			}else{
-				brewery.flag="New";
-				save.addOperation($scope.update,brewery);
+				save.addOperation("New",$scope.update,brewery);
 				$location.path("breweries");
 			}
 	}
@@ -122,8 +119,7 @@ module.exports=function($scope,rest,$timeout,$location,config,$route,save) {
 			brewery.deleted=true;
 			rest.remove(brewery,"breweries",callback);
 		}else{
-			brewery.flag="Deleted";
-			save.addOperation($scope.removeOne,brewery);
+			save.addOperation("Deleted",$scope.removeOne,brewery);
 			brewery.deleted=$scope.hideDeleted;
 		}
 	}
