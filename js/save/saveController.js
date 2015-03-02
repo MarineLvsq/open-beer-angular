@@ -1,7 +1,7 @@
 module.exports=function($scope,$location,save){
 	$scope.data=save;
 	$scope.allSelected=false;
-	$scope.sortBy={field:"name",asc:false};
+	$scope.sortBy={field:"type",asc:false};
 	
 	$scope.selectAll=function(){
 		angular.forEach($scope.data.operations, function(value, key) {
@@ -14,16 +14,13 @@ module.exports=function($scope,$location,save){
 	};
 	
 	$scope.setActive=function(operation){
-		operation.active=!operation.active;
-		if(operation.active){
-			if(angular.isDefined($scope.activeOperation)){
-				$scope.activeOperation.active=false;
-			}
+		if(operation!==$scope.activeOperation)
 			$scope.activeOperation=operation;
-		}else{
+		else
 			$scope.activeOperation=undefined;
-		}
-		config.activeOperation=$scope.activeOperation;
+	};
+	$scope.isActive=function(operation){
+		return operation==$scope.activeOperation;
 	};
 	
 	$scope.countSelected=function(){
@@ -36,13 +33,7 @@ module.exports=function($scope,$location,save){
 	};
 	
 	$scope.remove=function(){
-		angular.forEach($scope.data.operations, function(value, key) {
-			if(value.selected){
-				var index=save.operations.indexOf(value);
-				value.object.flag=undefined;
-				save.operations.splice(index,1);
-			}
-		});
+		save.operations=save.operations.filter(function(op){return !op.selected});
 		return true;
 	};
 };

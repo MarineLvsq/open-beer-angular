@@ -40,15 +40,11 @@ module.exports=function($q) {
 					$("#"+$scope.did).modal('hide');
 			});
 			
-//			$(document).on('hide.bs.modal',"#"+$scope.did,function(){
-//				$scope.show=false;
-//			});
-			
 			angular.forEach($scope.buttons, function(button, index) {
 				$("#"+$scope.did+"-"+index).click(function(){
-					$scope.value=button.caption;
+					//$scope.value=button.caption;
 					$scope.deferred.resolve(button.caption);
-					alert(button.caption);
+					//alert(button.caption);
 					}
 				);
 			})
@@ -56,15 +52,17 @@ module.exports=function($q) {
 	};
 };
 },{}],3:[function(require,module,exports){
-module.exports=function($q,$compile,$rootScope){
+module.exports=function($q,$compile,$rootScope,$sce){
 	
-    this.showModal=function(then){
+    this.showModal=function(title,content,then){
     	//if(angular.isUndefined(this.scope)){
 	    	this.scope=$rootScope.$new(true);
     	//}
     	this.scope.buttons=[{caption:"Enregistrer et continuer",dismiss:"true"},{caption:"Continuer",dismiss:"true"},{caption:"Annuler",dismiss:"true"}];
     	this.scope.then=then;
-    	var elm=angular.element('<bs-modal did="id-dialog" on-exit="then(button)" buttons="buttons" show="showDialog" title="Fermeture de l\'application"><b>Contenu</b> du dialog</bs-modal>');
+    	this.scope.title=title;
+    	this.scope.content=$sce.trustAsHtml(content);
+    	var elm=angular.element('<bs-modal did="id-dialog" on-exit="then(button)" buttons="buttons" show="showDialog" title="{{title}}"><div data-ng-bind-html="content"></div></bs-modal>');
     	$compile(elm)(this.scope);
     	//scope.$apply();
     	if(!$("#id-dialog").length)
@@ -135,7 +133,7 @@ filter("NotDeletedFilter",require("./addons/notDeletedFilter")).
 directive("sortBy", [require("./addons/sortBy")]).
 directive("Drag",require("./addons/drag")).
 directive("bsModal",["$q",require("./addons/modal")]).
-service("modalService",["$q","$compile","$rootScope",require("./addons/modalService")]).
+service("modalService",["$q","$compile","$rootScope","$sce",require("./addons/modalService")]).
 run(['$rootScope','$location', '$routeParams', function($rootScope, $location, $routeParams) {
 	$rootScope.$on('$routeChangeSuccess', function(e, current, pre) {
 		var paths=$location.path().split("/");
@@ -169,7 +167,7 @@ run(['$rootScope','$location', '$routeParams', function($rootScope, $location, $
 	return factory;
 });
 
-},{"./addons/drag":1,"./addons/modal":2,"./addons/modalService":3,"./addons/notDeletedFilter":4,"./addons/sortBy":5,"./breweries/breweriesModule":8,"./config":10,"./config/configModule":12,"./mainController":13,"./save/saveController":14,"./services/rest":15,"./services/save":16}],7:[function(require,module,exports){
+},{"./addons/drag":1,"./addons/modal":2,"./addons/modalService":3,"./addons/notDeletedFilter":4,"./addons/sortBy":5,"./breweries/breweriesModule":8,"./config":11,"./config/configModule":13,"./mainController":14,"./save/saveController":15,"./services/rest":16,"./services/save":17}],7:[function(require,module,exports){
 module.exports=function($scope,rest,$timeout,$location,config,$route,save) {
 	$scope.data={load:false};
 
@@ -217,7 +215,7 @@ module.exports=function($scope,rest,$timeout,$location,config,$route,save) {
 	
 	$scope.isActive=function(brewery){
 		return brewery==$scope.activeBrewery;
-	}
+	};
 	
 	$scope.hasMessage=function(){
 		return rest.messages.length>0;
@@ -299,35 +297,76 @@ module.exports=function($scope,rest,$timeout,$location,config,$route,save) {
 },{}],8:[function(require,module,exports){
 var appBreweries=angular.module("BreweriesApp", []).
 controller("BreweriesController", ["$scope","rest","$timeout","$location","config","$route","save",require("./breweriesController")]).
-controller("BreweryUpdateController",["$scope","config","$location","rest","save","$document","modalService",require("./breweryUpdateController")]);
+controller("BreweryAddController",["$scope","config","$location","rest","save","$document","modalService",require("./breweryAddController")]).
+controller("BreweryUpdateController",["$scope","config","$location","rest","save","$document","modalService","$controller",require("./breweryUpdateController")]);
 module.exports=angular.module("BreweriesApp").name;
-},{"./breweriesController":7,"./breweryUpdateController":9}],9:[function(require,module,exports){
-module.exports=function($scope,config,$location,rest,save,$document,modalService){
+},{"./breweriesController":7,"./breweryAddController":9,"./breweryUpdateController":10}],9:[function(require,module,exports){
+module.exports=function($scope,config,$location,rest,save,$document,modalService) {
+	
 	$scope.data={};
-	if(angular.isUndefined(config.activeBrewery)){
-		$location.path("breweries/");
-	}
-	$scope.activeBrewery=config.activeBrewery;
+	$scope.data["breweries"]=config.breweries.all;
+	var self=this;
 	
 	$scope.setFormScope=function(form){
 		$scope.frmBrewery=form;
 	};
 	var onRouteChangeOff=$scope.$on('$locationChangeStart', function routeChange(event, newUrl, oldUrl) {
-	    if (!$scope.frmBrewery || !$scope.frmBrewery.$dirty) return;
-	    
-	    var alert = modalService.showModal(function(value){
-		    	if(value=="Continuer"){
-		    		console.log(value);
-		    		onRouteChangeOff();
-		    		$location.path($location.url(newUrl).hash());
-		    	}
-	    	}
-	    );
-	    event.preventDefault();
-	    return;
+		if (!$scope.frmBrewery || !$scope.frmBrewery.$dirty || $scope.exit) return;
+
+		var alert = modalService.showModal("Sortie","<b>Attention</b>, si vous continuez, vous perdez les modifications en cours.<br>Enregistrer avant sortie ?",function(value){
+				if(value=="Enregistrer et continuer"){
+					onRouteChangeOff();
+					if($scope._update()==true){
+						$location.path(newUrl.substring($location.absUrl().length - $location.url().length));
+					}
+				}else if(value=="Continuer"){
+					console.log(value);
+					onRouteChangeOff();
+					$location.path(newUrl.substring($location.absUrl().length - $location.url().length));
+				}
+			}
+		);
+		event.preventDefault();
+		return;
 	});
 	
 	$scope.update=function(brewery,force,callback){
+		if($scope._update(brewery,force,callback)==true){
+			$location.path("breweries");
+		}
+	};
+	$scope._update=function(brewery,force,callback){
+		var result=false;
+		if(angular.isUndefined(brewery)){
+			brewery=$scope.activeBrewery;
+		}
+		$scope.data.posted={ "brewery" : {
+			"name" : brewery.name,
+			"url"  : brewery.url
+			}
+		};
+		$scope.data.breweries.push(brewery);
+		brewery.created_at=new Date();
+		if(config.breweries.update==="immediate" || force){
+			rest.post($scope.data,"breweries",brewery.name,callback);
+		}else{
+			save.addOperation("New",$scope.update,brewery);
+			result=true;
+		}
+		return result;
+	}
+};
+},{}],10:[function(require,module,exports){
+module.exports=function($scope,config,$location,rest,save,$document,modalService, $controller){
+	$controller('BreweryAddController', {$scope: $scope});
+
+	if(angular.isUndefined(config.activeBrewery)){
+		$location.path("breweries/");
+	}
+	$scope.activeBrewery=config.activeBrewery;
+	
+	$scope._update=function(brewery,force,callback){
+		var result=false;
 		if($scope.frmBrewery.$dirty){
 			if(angular.isUndefined(brewery)){
 				brewery=$scope.activeBrewery;
@@ -349,17 +388,16 @@ module.exports=function($scope,config,$location,rest,save,$document,modalService
 				rest.put(config.activeBrewery.id,$scope.data,"breweries",config.activeBrewery.name,callback);
 			else{
 				config.activeBrewery.reference.flag="Updated";
-				//brewery.flag="Updated";
 				save.addOperation("Updated",$scope.update,config.activeBrewery.reference);
-				$location.path("breweries");
+				result=true;
 			}
 		}else{
-			//config.activeBrewery.reference.active=false;
-			$location.path("breweries");
+			result=true;
 		}
+		return result;
 	}
 };
-},{}],10:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 module.exports=function($routeProvider,$locationProvider,$httpProvider) {
 	//$httpProvider.defaults.useXDomain = true;
 	//$httpProvider.defaults.withCredentials = true;
@@ -376,7 +414,7 @@ module.exports=function($routeProvider,$locationProvider,$httpProvider) {
 		controller: 'BreweriesController'
 	}).when('/breweries/new', {
 		templateUrl: 'templates/breweries/breweryForm.html',
-		controller: 'BreweriesController'
+		controller: 'BreweryAddController'
 	}).when('/breweries/update', {
 		templateUrl: 'templates/breweries/breweryForm.html',
 		controller: 'BreweryUpdateController'
@@ -393,15 +431,15 @@ module.exports=function($routeProvider,$locationProvider,$httpProvider) {
 		$locationProvider.html5Mode(true);
 	}
 };
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 module.exports=function($scope,config){
 	$scope.config=config;
 };
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 var configApp=angular.module("ConfigApp", []).
 controller("ConfigController", ["$scope","config",require("./configController")]);
 module.exports=configApp.name;
-},{"./configController":11}],13:[function(require,module,exports){
+},{"./configController":12}],14:[function(require,module,exports){
 module.exports=function($scope,$location,save,$window) {
 	
 	$scope.hasOperations=function(){
@@ -424,11 +462,11 @@ module.exports=function($scope,$location,save,$window) {
 	});
 	
 };
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 module.exports=function($scope,$location,save){
 	$scope.data=save;
 	$scope.allSelected=false;
-	$scope.sortBy={field:"name",asc:false};
+	$scope.sortBy={field:"type",asc:false};
 	
 	$scope.selectAll=function(){
 		angular.forEach($scope.data.operations, function(value, key) {
@@ -441,16 +479,13 @@ module.exports=function($scope,$location,save){
 	};
 	
 	$scope.setActive=function(operation){
-		operation.active=!operation.active;
-		if(operation.active){
-			if(angular.isDefined($scope.activeOperation)){
-				$scope.activeOperation.active=false;
-			}
+		if(operation!==$scope.activeOperation)
 			$scope.activeOperation=operation;
-		}else{
+		else
 			$scope.activeOperation=undefined;
-		}
-		config.activeOperation=$scope.activeOperation;
+	};
+	$scope.isActive=function(operation){
+		return operation==$scope.activeOperation;
 	};
 	
 	$scope.countSelected=function(){
@@ -463,17 +498,18 @@ module.exports=function($scope,$location,save){
 	};
 	
 	$scope.remove=function(){
-		angular.forEach($scope.data.operations, function(value, key) {
-			if(value.selected){
-				var index=save.operations.indexOf(value);
-				value.object.flag=undefined;
-				save.operations.splice(index,1);
-			}
-		});
+		save.operations=save.operations.filter(function(op){return !op.selected});
+//		angular.forEach($scope.data.operations, function(value, key) {
+//			if(value.selected){
+//				var index=save.operations.indexOf(value);
+//				value.object.flag=undefined;
+//				save.operations.splice(index,1);
+//			}
+//		});
 		return true;
 	};
 };
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 module.exports=function($http,$resource,$location,restConfig) {
 	var self=this;
 	if(angular.isUndefined(this.messages))
@@ -575,7 +611,7 @@ module.exports=function($http,$resource,$location,restConfig) {
 		self.messages.length=0;
 	};
 };
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 module.exports=function(rest,config,$route){
 	var self=this;
 	this.dataScope={};

@@ -45,7 +45,7 @@ module.exports=function($scope,rest,$timeout,$location,config,$route,save) {
 	
 	$scope.isActive=function(brewery){
 		return brewery==$scope.activeBrewery;
-	}
+	};
 	
 	$scope.hasMessage=function(){
 		return rest.messages.length>0;

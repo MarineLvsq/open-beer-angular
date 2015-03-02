@@ -46,7 +46,7 @@
 	</thead>
 	<tbody>
 		<tr data-ng-repeat="brewery in data.breweries | NotDeletedFilter | orderBy:sortBy.field : sortBy.asc | filter:q as results track by $index" data-ng-dblclick="edit(brewery)" data-ng-click="setActive(brewery)" data-ng-class="{'active': isActive(brewery)}">
-			<td><input type="checkbox" title="Sélectionner" data-ng-model="brewery.selected"></td>
+			<td><input type="checkbox" title="Sélectionner" data-ng-model="brewery.selected" data-ng-click="$event.stopPropagation()"></td>
 			<td>{{brewery.id}}</td><td>{{brewery.name}}
 				<span class="label" data-ng-class="{'label-success':brewery.flag=='New','label-warning':brewery.flag=='Updated','label-danger':brewery.flag=='Deleted'}" data-ng-show="brewery.flag">{{brewery.flag}}</span></td>
 			<td>{{brewery.url}}</td>

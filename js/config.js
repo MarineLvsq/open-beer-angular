@@ -14,7 +14,7 @@ module.exports=function($routeProvider,$locationProvider,$httpProvider) {
 		controller: 'BreweriesController'
 	}).when('/breweries/new', {
 		templateUrl: 'templates/breweries/breweryForm.html',
-		controller: 'BreweriesController'
+		controller: 'BreweryAddController'
 	}).when('/breweries/update', {
 		templateUrl: 'templates/breweries/breweryForm.html',
 		controller: 'BreweryUpdateController'

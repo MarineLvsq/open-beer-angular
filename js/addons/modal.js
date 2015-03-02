@@ -29,15 +29,11 @@ module.exports=function($q) {
 					$("#"+$scope.did).modal('hide');
 			});
 			
-//			$(document).on('hide.bs.modal',"#"+$scope.did,function(){
-//				$scope.show=false;
-//			});
-			
 			angular.forEach($scope.buttons, function(button, index) {
 				$("#"+$scope.did+"-"+index).click(function(){
-					$scope.value=button.caption;
+					//$scope.value=button.caption;
 					$scope.deferred.resolve(button.caption);
-					alert(button.caption);
+					//alert(button.caption);
 					}
 				);
 			})

@@ -26,7 +26,7 @@
 		</tr>
 	</thead>
 	<tbody>
-		<tr data-ng-repeat="operation in data.operations | orderBy:sortBy.field : sortBy.asc | filter:q as results" data-ng-click="setActive(operation)" data-ng-class="{'active': operation.active}">
+		<tr data-ng-repeat="operation in data.operations | orderBy:sortBy.field : sortBy.asc | filter:q as results" data-ng-click="setActive(operation)" data-ng-class="{'active': isActive(operation)}">
 			<td><input type="checkbox" title="Sélectionner" data-ng-model="operation.selected"></td>
 			<td><span class="label" data-ng-class="{'label-success':operation.type=='New','label-warning':operation.type=='Updated','label-danger':operation.type=='Deleted'}">{{operation.type}}</span></td>
 			<td>{{operation.object.id}}</td>

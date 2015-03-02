@@ -1,29 +1,13 @@
-module.exports=function($scope,config,$location,rest,save,$document,modalService){
-	$scope.data={};
+module.exports=function($scope,config,$location,rest,save,$document,modalService, $controller){
+	$controller('BreweryAddController', {$scope: $scope});
+
 	if(angular.isUndefined(config.activeBrewery)){
 		$location.path("breweries/");
 	}
 	$scope.activeBrewery=config.activeBrewery;
 	
-	$scope.setFormScope=function(form){
-		$scope.frmBrewery=form;
-	};
-	var onRouteChangeOff=$scope.$on('$locationChangeStart', function routeChange(event, newUrl, oldUrl) {
-	    if (!$scope.frmBrewery || !$scope.frmBrewery.$dirty) return;
-	    
-	    var alert = modalService.showModal(function(value){
-		    	if(value=="Continuer"){
-		    		console.log(value);
-		    		onRouteChangeOff();
-		    		$location.path($location.url(newUrl).hash());
-		    	}
-	    	}
-	    );
-	    event.preventDefault();
-	    return;
-	});
-	
-	$scope.update=function(brewery,force,callback){
+	$scope._update=function(brewery,force,callback){
+		var result=false;
 		if($scope.frmBrewery.$dirty){
 			if(angular.isUndefined(brewery)){
 				brewery=$scope.activeBrewery;
@@ -46,10 +30,11 @@ module.exports=function($scope,config,$location,rest,save,$document,modalService
 			else{
 				config.activeBrewery.reference.flag="Updated";
 				save.addOperation("Updated",$scope.update,config.activeBrewery.reference);
-				$location.path("breweries");
+				result=true;
 			}
 		}else{
-			$location.path("breweries");
+			result=true;
 		}
+		return result;
 	}
 };
