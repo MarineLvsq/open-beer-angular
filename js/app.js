@@ -31,13 +31,13 @@ run(['$rootScope','$location', '$routeParams', function($rootScope, $location, $
 	});
 }]
 ).factory("config", function() {
-	var factory={breweries:{}};
+	var factory={breweries:{},server:{}};
 	factory.activeBrewery=undefined;
 	factory.breweries.loaded=false;
 	factory.breweries.refresh="ask";
 	factory.breweries.update="deffered";
-	factory.privateToken="fb84484ec43843902c957293e247c01afb5b439c6825cbaa498a111422dc7b92";
-	factory.mashapeKey="lqafJTJ2lrmshnnjLI7ZXXvF7eEAp1qg93rjsnzYisiGEKvXKz";
-	factory.restServerUrl="https://community-open-beer-database.p.mashape.com/";
+	factory.server.privateToken="";
+	factory.server.mashapeKey="";
+	factory.server.restServerUrl="https://community-open-beer-database.p.mashape.com/";
 	return factory;
 });

@@ -1,4 +1,4 @@
-	<form name="frmConfig" data-ng-submit="frmConfig.$valid && update()" novalidate>
+	<form name="frmConfig" data-ng-submit="frmConfig.$valid && update()" novalidate data-ng-init="setFormScope(this)">
 		<fieldset>
 			<legend>Rafraîchissements</legend>
 			<div class="form-group">
@@ -41,17 +41,17 @@
 			<legend>Paramétres d'accès au serveur distant</legend>
 			<div class="form-group">
 				<label for="url">URL</label>
-				<input class="form-control" type="url" placeholder="Entrez une url" disabled="disabled" id="url" name="url" data-ng-model="config.restServerUrl">
+				<input class="form-control" type="url" placeholder="Entrez une url" disabled="disabled" id="url" name="url" data-ng-model="config.server.restServerUrl">
 			</div>
 			<div class="form-group">
 				<label for="token">Private token</label>
-				<input class="form-control" type="url" placeholder="Entrez la clé" id="token" name="token" data-ng-model="config.privateToken">
+				<input class="form-control" type="text" placeholder="Entrez la clé" id="token" name="token" data-ng-model="config.server.privateToken">
 			</div>
 			<div class="form-group">
 				<label for="mashapeKey">X-Mashape-Key</label>
-				<input class="form-control" type="url" placeholder="Entrez la clé" id="mashapeKey" name="mashapeKey" data-ng-model="config.mashapeKey">
+				<input class="form-control" type="text" placeholder="Entrez la clé" id="mashapeKey" name="mashapeKey" data-ng-model="config.server.mashapeKey">
 			</div>
 		</fieldset>
 		<button type="submit" class="btn btn-default">Sauvegarder les modifications</button>
-		&nbsp;<a href="breweries" class="btn btn-default">Annuler</a>
+		&nbsp;<a href="breweries" class="btn btn-default" data-ng-click="cancel()">Annuler</a>
 	</form>

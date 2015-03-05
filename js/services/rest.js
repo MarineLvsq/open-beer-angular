@@ -2,16 +2,17 @@ module.exports=function($http,$resource,$location,restConfig) {
 	var self=this;
 	if(angular.isUndefined(this.messages))
 		this.messages=new Array();
-	this.privateToken=restConfig.privateToken;
+	this.privateToken=restConfig.server.privateToken || "fb84484ec43843902c957293e247c01afb5b439c6825cbaa498a111422dc7b92";
+	this.mashapeKey=restConfig.server.mashapeKey || "lqafJTJ2lrmshnnjLI7ZXXvF7eEAp1qg93rjsnzYisiGEKvXKz";
 	this.headers={ 'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8',
-	    	'X-Mashape-Key': restConfig.mashapeKey,
+	    	'X-Mashape-Key': this.mashapeKey,
 	    	'Accept': 'application/json'
 	    	};
 	this.getAll=function(response,what){
 		var request = $http({
 		    method: "GET",
-		    url: restConfig.restServerUrl+what+'.json?token='+this.privateToken,
-		    headers: {'X-Mashape-Key': restConfig.mashapeKey,
+		    url: restConfig.server.restServerUrl+what+'.json?token='+this.privateToken,
+		    headers: {'X-Mashape-Key': this.mashapeKey,
 		    	'Accept': 'application/json'
 		    	},
 		    callback: 'JSON_CALLBACK'
@@ -30,12 +31,12 @@ module.exports=function($http,$resource,$location,restConfig) {
 		if(angular.isUndefined(callback))
 			this.clearMessages();
 		$http.defaults.headers.post["Content-Type"] = "application/x-www-form-urlencoded";
-		$http.defaults.headers.post["X-Mashape-Key"] = restConfig.mashapeKey;
+		$http.defaults.headers.post["X-Mashape-Key"] = this.mashapeKey;
 		$http.defaults.headers.post["Accept"] = "application/json";
 
 		var request = $http({
 		    method: "POST",
-		    url: restConfig.restServerUrl+what+'.json?token='+this.privateToken,
+		    url: restConfig.server.restServerUrl+what+'.json?token='+this.privateToken,
 		    data: $.param(response.posted),
 		    headers: self.headers
 		});
@@ -55,11 +56,11 @@ module.exports=function($http,$resource,$location,restConfig) {
 		if(angular.isUndefined(callback))
 			this.clearMessages();
 		$http.defaults.headers.post["Content-Type"] = "application/x-www-form-urlencoded";
-		$http.defaults.headers.post["X-Mashape-Key"] = restConfig.mashapeKey;
+		$http.defaults.headers.post["X-Mashape-Key"] = this.mashapeKey;
 		$http.defaults.headers.post["Accept"] = "text/plain";
 		var request = $http({
 		    method: "PUT",
-		    url: restConfig.restServerUrl+what+'/'+id+'.json?token='+this.privateToken,
+		    url: restConfig.server.restServerUrl+what+'/'+id+'.json?token='+this.privateToken,
 		    data: $.param(response.posted),
 		    headers: self.headers
 		});
@@ -80,7 +81,7 @@ module.exports=function($http,$resource,$location,restConfig) {
 			this.clearMessages();
 		var request = $http({
 		    method: "DELETE",
-		    url: restConfig.restServerUrl+what+'/'+object.id+'.json?token='+this.privateToken,
+		    url: restConfig.server.restServerUrl+what+'/'+object.id+'.json?token='+this.privateToken,
 		    headers: self.headers
 		});
 		request.success(function(data, status, headers, config) {

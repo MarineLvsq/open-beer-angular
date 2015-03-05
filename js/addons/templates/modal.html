@@ -9,7 +9,7 @@
       <div data-ng-transclude></div>
       </div>
       <div class="modal-footer">
-        <button data-ng-repeat="button in buttons" type="button" class="btn btn-default" id="{{did}}-{{$index}}" data-dismiss="{{isDismiss(button)}}">{{button.caption}}</button>
+        <button data-ng-repeat="button in buttons" type="button" class="btn btn-default" id="{{did}}-{{$index}}" data-dismiss="{{isDismiss(button)}}" ng-click="iClick(button)">{{button.caption}}</button>
       </div>
     </div><!-- /.modal-content -->
   </div><!-- /.modal-dialog -->

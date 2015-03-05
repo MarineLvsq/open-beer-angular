@@ -13,30 +13,41 @@ module.exports=function($q) {
 				return result;
 			}
 		},
-		link:function($scope, tElem, tAttrs) {
-			$scope.deferred = $q.defer();
-			$scope.deferred.promise.then(function(value){
-				$scope.onExit({button:value});
-			});
-			
-			if($("#"+$scope.did).length)
-				$("#"+$scope.did).modal();
-			
-			$scope.$watch('show', function(oldVal, newVal) {
-				if(newVal===true)
-					$("#"+$scope.did).modal('show');
-				else
-					$("#"+$scope.did).modal('hide');
-			});
-			
-			angular.forEach($scope.buttons, function(button, index) {
-				$("#"+$scope.did+"-"+index).click(function(){
-					//$scope.value=button.caption;
-					$scope.deferred.resolve(button.caption);
-					//alert(button.caption);
+		link:{
+			post: function postLink($scope, tElem, tAttrs) {
+				
+				if($("#"+$scope.did).length)
+					$("#"+$scope.did).modal();
+				
+				$scope.$watch('show', function(newValue, oldValue) {
+					if(newValue===true){
+						$("#"+$scope.did).modal('show');
+						$scope.deferred = $q.defer();
+						$scope.deferred.promise.then(function(value){
+							$scope.show=false;
+							$scope.onExit({button:value});
+						});
 					}
-				);
-			})
+					else{
+						$("#"+$scope.did).modal('hide');
+						//if(angular.isDefined($scope.deferred))
+						///	$scope.deferred.reject();
+					}
+				});
+				$scope.iClick=function(button){
+					$scope.deferred.resolve(button.caption);
+					alert(button.caption);
+				};
+//				angular.forEach($scope.buttons, function(button, index) {
+//					if($("#"+$scope.did+"-"+index).length){
+//						$("#"+$scope.did+"-"+index).click(function(){
+//							$scope.deferred.resolve(button.caption);
+//							alert(button.caption);
+//							}
+//						);
+//					}
+//				});
+			}
 		}
 	};
 };

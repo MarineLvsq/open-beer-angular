@@ -3,7 +3,7 @@ module.exports=function($scope,config,$location,rest,save,$document,modalService
 	$scope.data={};
 	$scope.data["breweries"]=config.breweries.all;
 	var self=this;
-	
+	var selfScope=$scope;
 	$scope.setFormScope=function(form){
 		$scope.frmBrewery=form;
 	};
@@ -11,9 +11,10 @@ module.exports=function($scope,config,$location,rest,save,$document,modalService
 		if (!$scope.frmBrewery || !$scope.frmBrewery.$dirty || $scope.exit) return;
 
 		var alert = modalService.showModal("Sortie","<b>Attention</b>, si vous continuez, vous perdez les modifications en cours.<br>Enregistrer avant sortie ?",function(value){
+				selfScope.exit=true;
 				if(value=="Enregistrer et continuer"){
 					onRouteChangeOff();
-					if($scope._update()==true){
+					if(selfScope._update()==true){
 						$location.path(newUrl.substring($location.absUrl().length - $location.url().length));
 					}
 				}else if(value=="Continuer"){

@@ -24,30 +24,41 @@ module.exports=function($q) {
 				return result;
 			}
 		},
-		link:function($scope, tElem, tAttrs) {
-			$scope.deferred = $q.defer();
-			$scope.deferred.promise.then(function(value){
-				$scope.onExit({button:value});
-			});
-			
-			if($("#"+$scope.did).length)
-				$("#"+$scope.did).modal();
-			
-			$scope.$watch('show', function(oldVal, newVal) {
-				if(newVal===true)
-					$("#"+$scope.did).modal('show');
-				else
-					$("#"+$scope.did).modal('hide');
-			});
-			
-			angular.forEach($scope.buttons, function(button, index) {
-				$("#"+$scope.did+"-"+index).click(function(){
-					//$scope.value=button.caption;
-					$scope.deferred.resolve(button.caption);
-					//alert(button.caption);
+		link:{
+			post: function postLink($scope, tElem, tAttrs) {
+				
+				if($("#"+$scope.did).length)
+					$("#"+$scope.did).modal();
+				
+				$scope.$watch('show', function(newValue, oldValue) {
+					if(newValue===true){
+						$("#"+$scope.did).modal('show');
+						$scope.deferred = $q.defer();
+						$scope.deferred.promise.then(function(value){
+							$scope.show=false;
+							$scope.onExit({button:value});
+						});
 					}
-				);
-			})
+					else{
+						$("#"+$scope.did).modal('hide');
+						//if(angular.isDefined($scope.deferred))
+						///	$scope.deferred.reject();
+					}
+				});
+				$scope.iClick=function(button){
+					$scope.deferred.resolve(button.caption);
+					alert(button.caption);
+				};
+//				angular.forEach($scope.buttons, function(button, index) {
+//					if($("#"+$scope.did+"-"+index).length){
+//						$("#"+$scope.did+"-"+index).click(function(){
+//							$scope.deferred.resolve(button.caption);
+//							alert(button.caption);
+//							}
+//						);
+//					}
+//				});
+			}
 		}
 	};
 };
@@ -55,7 +66,7 @@ module.exports=function($q) {
 module.exports=function($q,$compile,$rootScope,$sce){
 	
     this.showModal=function(title,content,then){
-    	//if(angular.isUndefined(this.scope)){
+    	if(angular.isUndefined(this.scope)){
 	    	this.scope=$rootScope.$new(true);
     	//}
     	this.scope.buttons=[{caption:"Enregistrer et continuer",dismiss:"true"},{caption:"Continuer",dismiss:"true"},{caption:"Annuler",dismiss:"true"}];
@@ -66,8 +77,11 @@ module.exports=function($q,$compile,$rootScope,$sce){
     	$compile(elm)(this.scope);
     	//scope.$apply();
     	if(!$("#id-dialog").length)
-    		angular.element($("body")).append(elm[0]);
-    	
+    		angular.element($("body")).append(elm);
+//			$("#id-dialog").on('hide.bs.modal', function() {
+//				this.scope.showDialog=false;
+//			});
+    	}
     	this.scope.showDialog=true;
     }
 };
@@ -156,14 +170,14 @@ run(['$rootScope','$location', '$routeParams', function($rootScope, $location, $
 	});
 }]
 ).factory("config", function() {
-	var factory={breweries:{}};
+	var factory={breweries:{},server:{}};
 	factory.activeBrewery=undefined;
 	factory.breweries.loaded=false;
 	factory.breweries.refresh="ask";
 	factory.breweries.update="deffered";
-	factory.privateToken="fb84484ec43843902c957293e247c01afb5b439c6825cbaa498a111422dc7b92";
-	factory.mashapeKey="lqafJTJ2lrmshnnjLI7ZXXvF7eEAp1qg93rjsnzYisiGEKvXKz";
-	factory.restServerUrl="https://community-open-beer-database.p.mashape.com/";
+	factory.server.privateToken="";
+	factory.server.mashapeKey="";
+	factory.server.restServerUrl="https://community-open-beer-database.p.mashape.com/";
 	return factory;
 });
 
@@ -306,7 +320,7 @@ module.exports=function($scope,config,$location,rest,save,$document,modalService
 	$scope.data={};
 	$scope.data["breweries"]=config.breweries.all;
 	var self=this;
-	
+	var selfScope=$scope;
 	$scope.setFormScope=function(form){
 		$scope.frmBrewery=form;
 	};
@@ -314,9 +328,10 @@ module.exports=function($scope,config,$location,rest,save,$document,modalService
 		if (!$scope.frmBrewery || !$scope.frmBrewery.$dirty || $scope.exit) return;
 
 		var alert = modalService.showModal("Sortie","<b>Attention</b>, si vous continuez, vous perdez les modifications en cours.<br>Enregistrer avant sortie ?",function(value){
+				selfScope.exit=true;
 				if(value=="Enregistrer et continuer"){
 					onRouteChangeOff();
-					if($scope._update()==true){
+					if(selfScope._update()==true){
 						$location.path(newUrl.substring($location.absUrl().length - $location.url().length));
 					}
 				}else if(value=="Continuer"){
@@ -432,12 +447,28 @@ module.exports=function($routeProvider,$locationProvider,$httpProvider) {
 	}
 };
 },{}],12:[function(require,module,exports){
-module.exports=function($scope,config){
-	$scope.config=config;
+module.exports=function($scope,config,$location){
+
+	$scope.config=angular.copy(config);
+	
+	$scope.setFormScope=function(form){
+		$scope.frmConfig=form;
+	};
+	
+	$scope.update=function(){
+		if($scope.frmConfig.$dirty){
+			config.server=$scope.config.server;
+			config.breweries=$scope.config.breweries;
+		}
+		$location.path("/");
+	};
+	$scope.cancel=function(){
+		$location.path("/");
+	};
 };
 },{}],13:[function(require,module,exports){
 var configApp=angular.module("ConfigApp", []).
-controller("ConfigController", ["$scope","config",require("./configController")]);
+controller("ConfigController", ["$scope","config","$location",require("./configController")]);
 module.exports=configApp.name;
 },{"./configController":12}],14:[function(require,module,exports){
 module.exports=function($scope,$location,save,$window) {
@@ -499,13 +530,6 @@ module.exports=function($scope,$location,save){
 	
 	$scope.remove=function(){
 		save.operations=save.operations.filter(function(op){return !op.selected});
-//		angular.forEach($scope.data.operations, function(value, key) {
-//			if(value.selected){
-//				var index=save.operations.indexOf(value);
-//				value.object.flag=undefined;
-//				save.operations.splice(index,1);
-//			}
-//		});
 		return true;
 	};
 };
@@ -514,16 +538,17 @@ module.exports=function($http,$resource,$location,restConfig) {
 	var self=this;
 	if(angular.isUndefined(this.messages))
 		this.messages=new Array();
-	this.privateToken=restConfig.privateToken;
+	this.privateToken=restConfig.server.privateToken || "fb84484ec43843902c957293e247c01afb5b439c6825cbaa498a111422dc7b92";
+	this.mashapeKey=restConfig.server.mashapeKey || "lqafJTJ2lrmshnnjLI7ZXXvF7eEAp1qg93rjsnzYisiGEKvXKz";
 	this.headers={ 'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8',
-	    	'X-Mashape-Key': restConfig.mashapeKey,
+	    	'X-Mashape-Key': this.mashapeKey,
 	    	'Accept': 'application/json'
 	    	};
 	this.getAll=function(response,what){
 		var request = $http({
 		    method: "GET",
-		    url: restConfig.restServerUrl+what+'.json?token='+this.privateToken,
-		    headers: {'X-Mashape-Key': restConfig.mashapeKey,
+		    url: restConfig.server.restServerUrl+what+'.json?token='+this.privateToken,
+		    headers: {'X-Mashape-Key': this.mashapeKey,
 		    	'Accept': 'application/json'
 		    	},
 		    callback: 'JSON_CALLBACK'
@@ -542,12 +567,12 @@ module.exports=function($http,$resource,$location,restConfig) {
 		if(angular.isUndefined(callback))
 			this.clearMessages();
 		$http.defaults.headers.post["Content-Type"] = "application/x-www-form-urlencoded";
-		$http.defaults.headers.post["X-Mashape-Key"] = restConfig.mashapeKey;
+		$http.defaults.headers.post["X-Mashape-Key"] = this.mashapeKey;
 		$http.defaults.headers.post["Accept"] = "application/json";
 
 		var request = $http({
 		    method: "POST",
-		    url: restConfig.restServerUrl+what+'.json?token='+this.privateToken,
+		    url: restConfig.server.restServerUrl+what+'.json?token='+this.privateToken,
 		    data: $.param(response.posted),
 		    headers: self.headers
 		});
@@ -567,11 +592,11 @@ module.exports=function($http,$resource,$location,restConfig) {
 		if(angular.isUndefined(callback))
 			this.clearMessages();
 		$http.defaults.headers.post["Content-Type"] = "application/x-www-form-urlencoded";
-		$http.defaults.headers.post["X-Mashape-Key"] = restConfig.mashapeKey;
+		$http.defaults.headers.post["X-Mashape-Key"] = this.mashapeKey;
 		$http.defaults.headers.post["Accept"] = "text/plain";
 		var request = $http({
 		    method: "PUT",
-		    url: restConfig.restServerUrl+what+'/'+id+'.json?token='+this.privateToken,
+		    url: restConfig.server.restServerUrl+what+'/'+id+'.json?token='+this.privateToken,
 		    data: $.param(response.posted),
 		    headers: self.headers
 		});
@@ -592,7 +617,7 @@ module.exports=function($http,$resource,$location,restConfig) {
 			this.clearMessages();
 		var request = $http({
 		    method: "DELETE",
-		    url: restConfig.restServerUrl+what+'/'+object.id+'.json?token='+this.privateToken,
+		    url: restConfig.server.restServerUrl+what+'/'+object.id+'.json?token='+this.privateToken,
 		    headers: self.headers
 		});
 		request.success(function(data, status, headers, config) {
