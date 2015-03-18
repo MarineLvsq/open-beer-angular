@@ -31,3 +31,37 @@ module.exports=function($routeProvider,$locationProvider,$httpProvider) {
 		$locationProvider.html5Mode(true);
 	}
 };
+
+module.exports=function($routeProvider,$locationProvider,$httpProvider) {
+	//$httpProvider.defaults.useXDomain = true;
+	//$httpProvider.defaults.withCredentials = true;
+	delete $httpProvider.defaults.headers.common["X-Requested-With"];
+	$routeProvider.
+		when('/', {
+			templateUrl: 'templates/main.html',
+			controller: 'MainController'
+		}).when('/beers', {
+			templateUrl: 'templates/beers/main.html',
+			controller: 'BeersController'
+		}).when('/beers/refresh', {
+			templateUrl: 'templates/beers/main.html',
+			controller: 'BeersController'
+		}).when('/beers/new', {
+			templateUrl: 'templates/beers/beerForm.html',
+			controller: 'BeerAddController'
+		}).when('/beers/update', {
+			templateUrl: 'templates/beers/beerForm.html',
+			controller: 'BeerUpdateController'
+		}).when('/saves', {
+			templateUrl: 'templates/saveMain.html',
+			controller: 'SaveController'
+		}).when('/config', {
+			templateUrl: 'templates/config.html',
+			controller: 'ConfigController'
+		}).otherwise({
+			redirectTo: '/'
+		});
+	if(window.history && window.history.pushState){
+		$locationProvider.html5Mode(true);
+	}
+};

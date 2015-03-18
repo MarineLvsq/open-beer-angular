@@ -10,6 +10,7 @@ module.exports=function($scope,config,$location){
 		if($scope.frmConfig.$dirty){
 			config.server=$scope.config.server;
 			config.breweries=$scope.config.breweries;
+			config.beers=$scope.config.beers;
 		}
 		$location.path("/");
 	};
