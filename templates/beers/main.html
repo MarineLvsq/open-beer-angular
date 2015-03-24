@@ -39,7 +39,7 @@
         <th><input type="checkbox" title="Sélectionner" data-ng-click="selectAll()" data-ng-model="allSelected"></th>
         <th data-sort-by data-field="id" data-ref="sortBy"># </th>
         <th data-sort-by data-field="name" data-ref="sortBy">Name </th>
-        <th data-sort-by data-field="url" data-ref="sortBy">url </th>
+        <th data-sort-by data-field="description" data-ref="sortBy">Description </th>
         <th data-sort-by data-field="created_at" data-ref="sortBy">Created at </th>
         <th>Updated at</th>
     </tr>
@@ -49,7 +49,7 @@
         <td><input type="checkbox" title="Sélectionner" data-ng-model="beer.selected" data-ng-click="$event.stopPropagation()"></td>
         <td>{{beer.id}}</td><td>{{beer.name}}
         <span class="label" data-ng-class="{'label-success':beer.flag=='New','label-warning':beer.flag=='Updated','label-danger':beer.flag=='Deleted'}" data-ng-show="beer.flag">{{beer.flag}}</span></td>
-        <td>{{beer.url}}</td>
+        <td>{{beer.description}}</td>
         <td>{{beer.created_at | date:'dd/MM/yy HH:mm:ss'}}</td>
         <td>{{beer.updated_at | date:'dd/MM/yy HH:mm:ss'}}</td>
     </tr>

@@ -40,7 +40,7 @@ module.exports=function($scope,config,$location,rest,save,$document,modalService
         }
         $scope.data.posted={ "beer" : {
             "name" : beer.name,
-            "url"  : beer.url
+            "description"  : beer.description
         }
         };
         $scope.data.beers.push(beer);
