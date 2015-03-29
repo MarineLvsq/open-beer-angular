@@ -3,4 +3,4 @@
  Todo :
 
  - Gestion des bierres
- - 
+ - Affichae d'une bierre
